@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Klang-Labor – Beats für Kinder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF4E2; --ink:#2B2340; --card:#FFFFFF; --soft:#FBEBD3; --line:#2B2340;
+  --accent:#FF6B4A; --ok:#2EC4B6; --cell:clamp(30px,4.8vw,46px);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:Fredoka,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);
+  background:var(--bg);
+  background-image:radial-gradient(#F7D9AE 1.5px,transparent 1.6px);
+  background-size:22px 22px;
+  -webkit-tap-highlight-color:transparent;
+  padding-bottom:40px;
+}
+button{font-family:inherit;color:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.wrap{max-width:1080px;margin:0 auto;padding:14px}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .blob{width:54px;height:54px;border-radius:18px;background:var(--accent);border:3px solid var(--line);
+  display:grid;place-items:center;font-size:30px;box-shadow:4px 4px 0 var(--line);transform:rotate(-6deg)}
+h1{margin:0;font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:.5px;line-height:1}
+.tag{margin:2px 0 0;font-size:15px;opacity:.75}
+.helpbtn{margin-left:auto}
+
+.card{background:var(--card);border:3px solid var(--line);border-radius:22px;box-shadow:5px 5px 0 var(--line);
+  padding:14px;margin-bottom:18px}
+.card h2{margin:0 0 10px;font-size:22px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .num{background:var(--ink);color:#fff;border-radius:50%;width:30px;height:30px;display:inline-grid;place-items:center;font-size:16px}
+.hint{font-size:14px;opacity:.7;font-weight:400}
+
+.btn{border:3px solid var(--line);background:#fff;border-radius:14px;padding:8px 14px;font-size:17px;font-weight:600;
+  box-shadow:3px 3px 0 var(--line);transition:transform .06s,box-shadow .06s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--line)}
+.btn.sel{background:var(--ink);color:#fff}
+.btn.small{padding:5px 9px;font-size:15px;border-radius:11px}
+
+/* Transport */
+.transport{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.play{width:78px;height:78px;border-radius:50%;font-size:34px;justify-content:center;padding:0;background:var(--ok)}
+.play.on{background:var(--accent)}
+.tempo{display:flex;align-items:center;gap:8px;background:var(--soft);border:3px solid var(--line);border-radius:16px;padding:6px 12px}
+.tempo input{width:140px;accent-color:var(--accent)}
+.tempo b{min-width:34px;text-align:center;font-size:18px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.spacer{flex:1}
+
+.loops{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:3px dashed #E9D7BC}
+.pat{width:54px;height:54px;font-size:24px;justify-content:center;padding:0;position:relative}
+.pat.playing::after{content:"";position:absolute;top:-7px;right:-7px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--line);animation:pulse .5s infinite alternate}
+.pat .dot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:currentColor;opacity:0}
+.pat.filled .dot{opacity:.8}
+@keyframes pulse{to{transform:scale(1.35)}}
+
+/* Grid */
+.gridwrap{overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+.grid{display:flex;flex-direction:column;gap:6px;width:max-content}
+.row{display:flex;align-items:center;gap:0}
+.lab{position:sticky;left:0;z-index:2;width:112px;min-width:112px;height:var(--cell);margin-right:8px;
+  border:3px solid var(--line);border-radius:12px;background:var(--c);display:flex;align-items:center;gap:6px;
+  padding:0 8px;font-size:15px;font-weight:600;box-shadow:2px 2px 0 var(--line);text-align:left;overflow:hidden}
+.lab .em{font-size:20px}
+.lab.empty{background:#eee;opacity:.7}
+.cell{width:var(--cell);height:var(--cell);margin-right:4px;border-radius:10px;border:3px solid #D9CBB4;background:#FFF9F0;padding:0;transition:background .08s}
+.cell.g{background:#F7EEDF}
+.cell:nth-child(4n+2){margin-left:8px}
+.cell.on{background:var(--c);border-color:var(--line);box-shadow:2px 2px 0 var(--line)}
+.cell.now{border-color:var(--accent);outline:3px solid #FFD1C4}
+.cell.on.now{outline:3px solid var(--accent)}
+.cell.hit{animation:hit .22s ease-out}
+@keyframes hit{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+.note-lab{justify-content:center;font-size:20px}
+
+/* Voice studio */
+.voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.vcard{border:3px solid var(--line);border-radius:18px;padding:10px;background:linear-gradient(180deg,var(--c) 0 64px,#fff 64px)}
+.vhead{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.vemoji{font-size:34px;width:48px;height:48px;display:grid;place-items:center;background:#fff;border:3px solid var(--line);border-radius:14px}
+.vhead canvas{flex:1;height:44px;min-width:0;background:rgba(255,255,255,.6);border:3px solid var(--line);border-radius:12px}
+.rec{width:100%;justify-content:center;font-size:19px;padding:10px;background:#FFE3E3}
+.rec.live{background:#FF4D4D;color:#fff;animation:recpulse .8s infinite alternate}
+@keyframes recpulse{to{box-shadow:3px 3px 0 var(--line),0 0 0 8px rgba(255,77,77,.25)}}
+.vrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.vrow .btn{flex:1;justify-content:center}
+
+/* Live pads */
+.pads{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:10px}
+.pad{aspect-ratio:1;border:3px solid var(--line);border-radius:18px;background:var(--c);font-size:26px;
+  box-shadow:4px 4px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px}
+.pad small{font-size:13px;font-weight:600}
+.pad.press{transform:translate(4px,4px);box-shadow:0 0 0 var(--line)}
+.pad.dim{opacity:.4}
+.padhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:10px}
+.btn.recmode.sel{background:#FF4D4D;border-color:var(--line)}
+
+/* Dialog */
+.dlg{position:fixed;inset:0;background:rgba(43,35,64,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.dlg.open{display:flex}
+.dlg .card{max-width:480px;width:100%;margin:0}
+.dlg p{line-height:1.45}
+.dlg .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.tips{display:none}
+.tips.open{display:block}
+.tips ul{margin:0;padding-left:20px;line-height:1.6}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;
+  padding:10px 18px;border-radius:14px;font-weight:600;transition:transform .25s;z-index:60;max-width:90vw;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+/* Library */
+.libtop{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.search{flex:1;min-width:200px;border:3px solid var(--line);border-radius:14px;padding:10px 14px;font:inherit;font-size:17px;background:#FFF9F0}
+.groups{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.cats{display:flex;gap:8px;flex-wrap:wrap;max-height:230px;overflow-y:auto;padding:4px 2px 8px}
+.cat{border:3px solid var(--line);border-radius:14px;background:#fff;padding:6px 10px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:2px 2px 0 var(--line)}
+.cat .ce{font-size:22px}
+.cat.sel{background:#FFD36B}
+.clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px;margin-top:12px}
+.clip{aspect-ratio:1;border:3px solid var(--line);border-radius:14px;background:#FFF9F0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:22px;padding:2px}
+.clip small{font-size:12px;font-weight:600;opacity:.7}
+.clip.sel{background:#FFD36B;box-shadow:2px 2px 0 var(--line)}
+.clip.playing{animation:hit .25s}
+.picked{position:sticky;bottom:8px;z-index:5;box-shadow:0 6px 18px rgba(43,35,64,.18);margin-top:12px;border:3px dashed var(--line);border-radius:16px;padding:10px;display:none;background:#FFFBF4}
+.picked.show{display:block}
+.picked .t{font-weight:700;font-size:18px}
+.picked .credit{font-size:13px;opacity:.7;margin:2px 0 8px;word-break:break-word}
+.picked .credit a{color:inherit}
+.slots{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.slotbtn{font-size:24px;width:52px;height:52px;justify-content:center;padding:0;background:var(--c)}
+.vname{font-size:13px;font-weight:600;opacity:.75;margin:-4px 0 8px;min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar{height:16px;border:3px solid var(--line);border-radius:10px;background:#FFF9F0;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .2s}
+.btn.save{background:#FFD36B}
+.foot{font-size:13px;opacity:.65;text-align:center;margin-top:10px;line-height:1.5}
+.foot a{color:inherit}
+@media (max-width:560px){
+  .lab{width:52px;min-width:52px;justify-content:center;padding:0}
+  .lab .nm{display:none}
+  .play{width:66px;height:66px}
+  .tempo input{width:110px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">
+    <div class="blob">🎶</div>
+    <div>
+      <h1>Klang-Labor</h1>
+      <p class="tag">Bau deinen eigenen Beat – mit Trommeln, Melodien und deiner Stimme!</p>
+    </div>
+  </div>
+  <button class="btn helpbtn" id="helpBtn">❓ Tipps</button>
+</header>
+
+<section class="card tips" id="tips">
+  <h2>💡 So geht's</h2>
+  <ul>
+    <li><b>Kästchen antippen</b> = dort spielt ein Ton. Noch mal antippen = weg.</li>
+    <li><b>▶ Start</b> drücken (oder Leertaste) – der Beat läuft immer im Kreis.</li>
+    <li><b>🐢 / 🐇</b> macht die Musik langsamer oder schneller.</li>
+    <li><b>Meine Klänge:</b> Nimm Geräusche auf (singen, klatschen, „Bumm“ sagen …) oder hol dir eins aus der <b>Bibliothek</b> (Hund, Zug, Regen, Niesen …). Dann tauchen sie im Rhythmus-Raster auf!</li>
+    <li><b>💾 Song speichern</b> macht aus deinem Beat eine Musik-Datei.</li>
+    <li><b>A B C D</b> sind vier Loops. Mit <b>⛓ Kette</b> spielen sie nacheinander – ein ganzes Lied.</li>
+    <li><b>🎲 Zaubern</b> erfindet einen zufälligen Beat. <b>Live-Pads:</b> einfach draufhauen – mit <b>⏺</b> wird mitgeschrieben.</li>
+  </ul>
+</section>
+
+<!-- Transport -->
+<section class="card">
+  <div class="transport">
+    <button class="btn play" id="playBtn" aria-label="Start">▶</button>
+    <div class="tempo">
+      <span title="langsam">🐢</span>
+      <input type="range" id="bpm" min="60" max="180" step="1" value="100" aria-label="Tempo">
+      <span title="schnell">🐇</span>
+      <b id="bpmVal">100</b>
+    </div>
+    <div class="seg" id="kitSeg"></div>
+    <div class="spacer"></div>
+    <button class="btn" id="magicBtn">🎲 Zaubern</button>
+    <button class="btn" id="clearBtn">🧹 Leeren</button>
+    <button class="btn save" id="exportBtn">💾 Song speichern</button>
+  </div>
+  <div class="loops">
+    <b style="font-size:17px">Loops:</b>
+    <div class="seg" id="patSeg"></div>
+    <button class="btn small" id="copyBtn">📋 Kopieren ➜</button>
+    <button class="btn small" id="chainBtn">⛓ Kette</button>
+  </div>
+</section>
+
+<!-- Rhythm -->
+<section class="card">
+  <h2><span class="num">1</span> Rhythmus <span class="hint">– tippe auf ein Bild links, um den Klang zu hören</span></h2>
+  <div class="gridwrap"><div class="grid" id="beatGrid"></div></div>
+</section>
+
+<!-- Melody -->
+<section class="card">
+  <h2><span class="num">2</span> Melodie <span class="hint">– alle Töne passen zusammen, probier einfach!</span></h2>
+  <div class="seg" id="instSeg" style="margin-bottom:12px"></div>
+  <div class="gridwrap"><div class="grid" id="melGrid"></div></div>
+</section>
+
+<!-- Voice -->
+<section class="card">
+  <h2><span class="num">3</span> Meine Klänge <span class="hint">– nimm etwas auf (bis 5 Sek.) oder hol dir ein Geräusch aus der Bibliothek</span></h2>
+  <div class="voices" id="voices"></div>
+</section>
+
+<!-- Library -->
+<section class="card" id="library">
+  <h2><span class="num">4</span> Geräusche-Bibliothek <span class="hint">– 2.000 echte Geräusche aus dem Alltag</span></h2>
+  <div class="libtop">
+    <input class="search" id="libSearch" type="search" placeholder="🔎 Suchen: Hund, Regen, Zug, Lachen …" aria-label="Geräusch suchen">
+    <button class="btn" id="libRandom">🎲 Überrasch mich</button>
+  </div>
+  <div class="groups" id="libGroups"></div>
+  <div class="cats" id="libCats"></div>
+  <div class="clips" id="libClips"></div>
+  <div class="picked" id="libPicked">
+    <div class="t" id="pickTitle"></div>
+    <div class="credit" id="pickCredit"></div>
+    <div class="slots">
+      <button class="btn small" id="pickPlay">▶ Noch mal</button>
+      <b>Ab ins Studio:</b>
+      <span class="slots" id="pickSlots"></span>
+    </div>
+  </div>
+  <p class="foot">Geräusche aus dem Datensatz <a href="https://github.com/karolpiczak/ESC-50" target="_blank" rel="noopener">ESC-50</a> von Karol J. Piczak (CC BY-NC 3.0), ursprünglich von freesound.org – Urheber und Lizenz stehen bei jedem Geräusch.</p>
+</section>
+
+<!-- Live pads -->
+<section class="card">
+  <h2><span class="num">5</span> Live-Pads</h2>
+  <div class="padhead">
+    <button class="btn recmode" id="liveRecBtn">⏺ Mitschreiben</button>
+    <span class="hint">Wenn der Beat läuft und ⏺ an ist, landet jeder Schlag im Raster.</span>
+  </div>
+  <div class="pads" id="pads"></div>
+</section>
+
+</div>
+
+<div class="dlg" id="micDlg">
+  <div class="card">
+    <h2>🎤 Mikrofon geht hier nicht</h2>
+    <p>Das Mikrofon ist auf dieser Seite gerade gesperrt oder wurde nicht erlaubt.</p>
+    <p><b>Kein Problem:</b> Hol dir ein Geräusch aus der <b>Bibliothek</b> 📚 – oder wähle eine Sprachaufnahme als Datei aus. Auf dem Handy kannst du dabei oft direkt etwas aufnehmen.</p>
+    <p class="hint">Für Erwachsene: Lädt man den Ordner der Seite auf einen eigenen Webspace (mit https), klappt die Aufnahme per Mikrofon.</p>
+    <div class="actions">
+      <button class="btn" id="micCancel">Schließen</button>
+      <button class="btn" id="micLib">📚 Bibliothek</button>
+      <button class="btn sel" id="micFile">📂 Datei wählen</button>
+    </div>
+  </div>
+</div>
+<div class="dlg" id="expDlg">
+  <div class="card">
+    <h2 id="expTitle">💾 Song wird gebaut …</h2>
+    <p id="expText">Einen Moment, ich nehme deinen Song auf.</p>
+    <div class="bar"><i id="expBar"></i></div>
+    <div class="actions">
+      <button class="btn" id="expClose">Schließen</button>
+      <button class="btn" id="expListen" hidden>▶ Anhören</button>
+      <button class="btn sel" id="expSave" hidden>💾 Speichern</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="fileIn" accept="audio/*" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ---------- Daten ---------- */
+const STEPS = 16;
+const DRUMS = [
+  {id:'kick',  name:'Bumm',    emoji:'🥁', color:'#FF8A6B'},
+  {id:'snare', name:'Tschak',  emoji:'💥', color:'#FFC24B'},
+  {id:'hat',   name:'Zisch',   emoji:'✨', color:'#5ED6CB'},
+  {id:'clap',  name:'Klatsch', emoji:'👏', color:'#B58AF0'},
+  {id:'bell',  name:'Bimm',    emoji:'🔔', color:'#F68CCB'},
+  {id:'bongo', name:'Klock',   emoji:'🥥', color:'#5CCFFF'},
+];
+const VOICES = [
+  {name:'Fuchs',    emoji:'🦊', color:'#FFB199'},
+  {name:'Frosch',   emoji:'🐸', color:'#9FE3A8'},
+  {name:'Panda',    emoji:'🐼', color:'#A9B8FF'},
+  {name:'Einhorn',  emoji:'🦄', color:'#E0B3FF'},
+  {name:'Krake',    emoji:'🐙', color:'#FFC6E0'},
+  {name:'Löwe',     emoji:'🦁', color:'#FFE08A'},
+];
+// Pentatonik (C-Dur), oben = hoch
+const NOTES = [
+  {n:'E', f:659.25, c:'#FF6B6B'},
+  {n:'D', f:587.33, c:'#FF9F43'},
+  {n:'C', f:523.25, c:'#FECA57'},
+  {n:'A', f:440.00, c:'#7ED957'},
+  {n:'G', f:392.00, c:'#2EC4B6'},
+  {n:'E', f:329.63, c:'#54A0FF'},
+  {n:'D', f:293.66, c:'#8E7CFF'},
+  {n:'C', f:261.63, c:'#D980FA'},
+];
+const KITS = {
+  classic:{name:'Klassisch', emoji:'🥁', p:1,   len:1,   kw:'sine'},
+  robot:  {name:'Roboter',   emoji:'🤖', p:.75, len:.7,  kw:'square'},
+  toy:    {name:'Spielzeug', emoji:'🧸', p:1.9, len:.55, kw:'triangle'},
+};
+const INSTS = {
+  xylo: {name:'Xylofon',    emoji:'🎹'},
+  space:{name:'Weltraum',   emoji:'🚀'},
+  bass: {name:'Brumm-Bass', emoji:'🐘'},
+};
+
+const grid = (rows) => Array.from({length:rows}, () => Array(STEPS).fill(false));
+const emptyPattern = () => ({drums:grid(DRUMS.length), voices:grid(VOICES.length), melody:grid(NOTES.length)});
+
+function demoPattern(){
+  const p = emptyPattern();
+  [0,8,10].forEach(s=>p.drums[0][s]=true);
+  [4,12].forEach(s=>p.drums[1][s]=true);
+  for(let s=0;s<STEPS;s+=2) p.drums[2][s]=true;
+  [[0,7],[2,5],[4,4],[6,5],[8,3],[11,4],[12,5],[14,7]].forEach(([s,n])=>p.melody[n][s]=true);
+  return p;
+}
+
+let S = {patterns:[demoPattern(),emptyPattern(),emptyPattern(),emptyPattern()], edit:0, bpm:100, kit:'classic', inst:'xylo', chain:false,
+  voiceSrc: VOICES.map(()=>null)};
+
+function sanitizeGrid(g, rows){
+  const out = grid(rows);
+  if(Array.isArray(g)) for(let r=0;r<rows;r++) for(let s=0;s<STEPS;s++) out[r][s] = !!(g[r] && g[r][s]);
+  return out;
+}
+(function load(){
+  try{
+    const raw = localStorage.getItem('klanglabor-v1');
+    if(!raw) return;
+    const d = JSON.parse(raw);
+    if(Array.isArray(d.patterns) && d.patterns.length===4){
+      S.patterns = d.patterns.map(p=>({
+        drums:sanitizeGrid(p&&p.drums,DRUMS.length),
+        voices:sanitizeGrid(p&&p.voices,VOICES.length),
+        melody:sanitizeGrid(p&&p.melody,NOTES.length)}));
+    }
+    if(d.bpm>=60 && d.bpm<=180) S.bpm = d.bpm|0;
+    if(KITS[d.kit]) S.kit = d.kit;
+    if(INSTS[d.inst]) S.inst = d.inst;
+    S.chain = !!d.chain;
+    if(Array.isArray(d.voiceSrc)) S.voiceSrc = VOICES.map((_,i)=>{
+      const v=d.voiceSrc[i]; return (v && typeof v.c==='string' && Number.isInteger(v.n)) ? {c:v.c,n:v.n} : null; });
+  }catch(e){}
+})();
+let saveT;
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(()=>{
+    try{ localStorage.setItem('klanglabor-v1', JSON.stringify({patterns:S.patterns,bpm:S.bpm,kit:S.kit,inst:S.inst,chain:S.chain,voiceSrc:S.voiceSrc})); }catch(e){}
+  }, 300);
+}
+const isEmpty = p => ![...p.drums,...p.voices,...p.melody].some(r=>r.some(Boolean));
+
+/* ---------- Audio ---------- */
+let ctx, liveCtx, master, drumBus, melBus, voiceBus, crusher, delay, noiseBuf;
+function ensureAudio(){
+  if(liveCtx){ if(liveCtx.state!=='running') liveCtx.resume().catch(()=>{}); return liveCtx; }
+  liveCtx = new (window.AudioContext||window.webkitAudioContext)();
+  noiseBuf = liveCtx.createBuffer(1, liveCtx.sampleRate, liveCtx.sampleRate);
+  const nd = noiseBuf.getChannelData(0);
+  for(let i=0;i<nd.length;i++) nd[i] = Math.random()*2-1;
+  setupGraph(liveCtx);
+  if(liveCtx.state!=='running') liveCtx.resume().catch(()=>{});
+  return liveCtx;
+}
+const grabGraph = () => ({ctx,master,drumBus,melBus,voiceBus,crusher,delay});
+function putGraph(g){ ({ctx,master,drumBus,melBus,voiceBus,crusher,delay} = g); }
+function setupGraph(ac){
+  ctx = ac;
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -14; comp.ratio.value = 4;
+  master = ctx.createGain(); master.gain.value = .8;
+  master.connect(comp); comp.connect(ctx.destination);
+  drumBus = ctx.createGain();
+  melBus = ctx.createGain(); melBus.gain.value = .55; melBus.connect(master);
+  voiceBus = ctx.createGain(); voiceBus.connect(master);
+  delay = ctx.createDelay(2);
+  const fb = ctx.createGain(); fb.gain.value = .3;
+  const wet = ctx.createGain(); wet.gain.value = .22;
+  melBus.connect(delay); delay.connect(fb); fb.connect(delay); delay.connect(wet); wet.connect(master);
+  crusher = ctx.createWaveShaper();
+  const n=1024, c=new Float32Array(n);
+  for(let i=0;i<n;i++){ const x=i/(n-1)*2-1; c[i]=Math.round(x*5)/5; }
+  crusher.curve = c; crusher.connect(master);
+  routeDrums(); syncDelay();
+}
+function routeDrums(){ if(!ctx) return; drumBus.disconnect(); drumBus.connect(S.kit==='robot'?crusher:master); }
+function syncDelay(){ if(delay) delay.delayTime.value = stepDur()*3; }
+const stepDur = () => 60/S.bpm/4;
+
+function env(g,t,peak,dec,att=.002){
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(peak,t+att);
+  g.gain.exponentialRampToValueAtTime(.0001,t+att+dec);
+}
+function noise(t,dur){
+  const s = ctx.createBufferSource(); s.buffer = noiseBuf;
+  s.start(t, Math.random()*.5); s.stop(t+dur); return s;
+}
+function filt(type,freq,q){ const f=ctx.createBiquadFilter(); f.type=type; f.frequency.value=freq; if(q) f.Q.value=q; return f; }
+function osc(type,freq){ const o=ctx.createOscillator(); o.type=type; o.frequency.value=freq; return o; }
+
+const DRUMFX = {
+  kick(t,k){
+    const o=osc(k.kw,160*k.p), g=ctx.createGain();
+    o.frequency.setValueAtTime(160*k.p,t);
+    o.frequency.exponentialRampToValueAtTime(45*k.p,t+.14);
+    env(g,t,k.kw==='sine'?1:.45,.45*k.len);
+    o.connect(g); g.connect(drumBus); o.start(t); o.stop(t+.6);
+  },
+  snare(t,k){
+    const n=noise(t,.3), f=filt('highpass',1200*k.p), g=ctx.createGain();
+    env(g,t,.5,.18*k.len); n.connect(f); f.connect(g); g.connect(drumBus);
+    const o=osc('triangle',200*k.p), g2=ctx.createGain();
+    o.frequency.setValueAtTime(200*k.p,t); o.frequency.exponentialRampToValueAtTime(120*k.p,t+.1);
+    env(g2,t,.5,.1*k.len); o.connect(g2); g2.connect(drumBus); o.start(t); o.stop(t+.3);
+  },
+  hat(t,k){
+    const n=noise(t,.15), f=filt('highpass',Math.min(7000*k.p,12000)), g=ctx.createGain();
+    env(g,t,.28,.05*k.len+.01); n.connect(f); f.connect(g); g.connect(drumBus);
+  },
+  clap(t,k){
+    const n=noise(t,.4), f=filt('bandpass',1500*k.p,.9), g=ctx.createGain();
+    g.gain.setValueAtTime(.0001,t);
+    [0,.012,.024].forEach(d=>{ g.gain.setValueAtTime(.8,t+d); g.gain.exponentialRampToValueAtTime(.1,t+d+.01); });
+    g.gain.setValueAtTime(.6,t+.036); g.gain.exponentialRampToValueAtTime(.0001,t+.036+.18*k.len);
+    n.connect(f); f.connect(g); g.connect(drumBus);
+  },
+  bell(t,k){
+    const f=filt('bandpass',900*k.p,2), g=ctx.createGain();
+    env(g,t,.35,.35*k.len); f.connect(g); g.connect(drumBus);
+    [540,800].forEach(fr=>{ const o=osc('square',fr*k.p); o.connect(f); o.start(t); o.stop(t+.5); });
+  },
+  bongo(t,k){
+    const o=osc('sine',380*k.p), g=ctx.createGain();
+    o.frequency.setValueAtTime(380*k.p,t); o.frequency.exponentialRampToValueAtTime(260*k.p,t+.08);
+    env(g,t,.7,.2*k.len); o.connect(g); g.connect(drumBus); o.start(t); o.stop(t+.35);
+  },
+};
+function playDrum(i,t){ DRUMFX[DRUMS[i].id](t, KITS[S.kit]); }
+
+function playNote(i,t){
+  const f = NOTES[i].f;
+  if(S.inst==='xylo'){
+    [[1,.55,.6],[4,.12,.12]].forEach(([m,a,d])=>{
+      const o=osc('sine',f*m), g=ctx.createGain(); env(g,t,a,d);
+      o.connect(g); g.connect(melBus); o.start(t); o.stop(t+d+.05);
+    });
+  } else if(S.inst==='space'){
+    const fl=filt('lowpass',3000,6), g=ctx.createGain();
+    fl.frequency.setValueAtTime(3000,t); fl.frequency.exponentialRampToValueAtTime(400,t+.35);
+    env(g,t,.22,.45,.01); fl.connect(g); g.connect(melBus);
+    [-8,8].forEach(dt=>{ const o=osc('sawtooth',f); o.detune.value=dt; o.connect(fl); o.start(t); o.stop(t+.5); });
+  } else {
+    const fl=filt('lowpass',900), g=ctx.createGain();
+    fl.frequency.setValueAtTime(900,t); fl.frequency.exponentialRampToValueAtTime(200,t+.25);
+    env(g,t,.55,.32,.005); fl.connect(g); g.connect(master);
+    ['square','triangle'].forEach(w=>{ const o=osc(w,f/2); o.connect(fl); o.start(t); o.stop(t+.4); });
+  }
+}
+
+/* Stimmen */
+const vBuf=VOICES.map(()=>null), vRev=VOICES.map(()=>null), vLast=VOICES.map(()=>null), vName=VOICES.map(()=>'');
+const vSet = VOICES.map(()=>({pitch:1, rev:false}));
+function playVoice(i,t){
+  const b = vSet[i].rev ? vRev[i] : vBuf[i];
+  if(!b) return;
+  if(vLast[i]){ try{ vLast[i].stop(t); }catch(e){} }
+  const s = ctx.createBufferSource(); s.buffer=b; s.playbackRate.value=vSet[i].pitch;
+  s.connect(voiceBus); s.start(t); vLast[i]=s;
+}
+
+/* ---------- Sequencer ---------- */
+let playing=false, curStep=0, nextTime=0, playPat=0, timer=null;
+let drawQ=[], hist=[];
+const liveSkip = new Set();
+
+function playStep(pi,s,t,offline){
+  const p = S.patterns[pi];
+  const k = (type,i)=>{ if(offline) return true; const key=pi+':'+s+':'+type+':'+i; if(liveSkip.has(key)){ liveSkip.delete(key); return false; } return true; };
+  p.drums.forEach((r,i)=>{ if(r[s] && k('d',i)) playDrum(i,t); });
+  p.voices.forEach((r,i)=>{ if(r[s] && k('v',i)) playVoice(i,t); });
+  p.melody.forEach((r,i)=>{ if(r[s] && k('m',i)) playNote(i,t); });
+}
+function nextPattern(){
+  if(!S.chain) return S.edit;
+  for(let k=1;k<=4;k++){ const c=(playPat+k)%4; if(!isEmpty(S.patterns[c])) return c; }
+  return playPat;
+}
+function tick(){
+  while(nextTime < ctx.currentTime + .12){
+    playStep(playPat,curStep,nextTime);
+    const ev = {pat:playPat, step:curStep, time:nextTime};
+    drawQ.push(ev); hist.push(ev); if(hist.length>8) hist.shift();
+    nextTime += stepDur();
+    if(++curStep >= STEPS){ curStep=0; playPat=nextPattern(); }
+  }
+}
+function start(){
+  ensureAudio();
+  playing=true; curStep=0; playPat=S.edit; hist=[]; drawQ=[]; liveSkip.clear();
+  nextTime = ctx.currentTime + .06;
+  tick(); timer = setInterval(tick, 25);
+  playBtn.textContent='⏹'; playBtn.classList.add('on'); playBtn.setAttribute('aria-label','Stopp');
+}
+function stop(){
+  playing=false; clearInterval(timer); drawQ=[];
+  document.querySelectorAll('.cell.now').forEach(c=>c.classList.remove('now'));
+  document.querySelectorAll('.pat.playing').forEach(c=>c.classList.remove('playing'));
+  playBtn.textContent='▶'; playBtn.classList.remove('on'); playBtn.setAttribute('aria-label','Start');
+}
+
+/* ---------- UI ---------- */
+const $ = id => document.getElementById(id);
+const playBtn = $('playBtn');
+let cols = [];          // cols[step] = [cells...]
+let cellRefs = {};      // type -> [row][step] -> el
+
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; }
+
+function buildGrid(container, type, rows){
+  container.innerHTML='';
+  cellRefs[type] = [];
+  rows.forEach((r,ri)=>{
+    const row = el('div','row');
+    row.style.setProperty('--c', r.color);
+    const lab = el('button','lab'+(type==='melody'?' note-lab':''),
+      type==='melody' ? `<span>${r.n}</span>` : `<span class="em">${r.emoji}</span><span class="nm">${r.name}</span>`);
+    lab.setAttribute('aria-label', (r.name||('Ton '+r.n))+' anhören');
+    lab.addEventListener('click',()=>{ ensureAudio(); preview(type,ri); });
+    row.appendChild(lab);
+    cellRefs[type][ri] = [];
+    for(let s=0;s<STEPS;s++){
+      const c = el('button','cell'+((s>>2)%2?' g':''));
+      c.setAttribute('aria-label', `${r.name||r.n} Schritt ${s+1}`);
+      c.addEventListener('click',()=>{
+        const g = S.patterns[S.edit][type];
+        g[ri][s] = !g[ri][s];
+        if(type==='melody' && g[ri][s]) for(let o=0;o<NOTES.length;o++) if(o!==ri && g[o][s]){ /* Mehrstimmig erlaubt */ }
+        c.classList.toggle('on', g[ri][s]);
+        if(g[ri][s] && !playing){ ensureAudio(); preview(type,ri); }
+        save(); updatePatButtons();
+      });
+      row.appendChild(c);
+      cellRefs[type][ri][s] = c;
+      (cols[s] ||= []).push(c);
+    }
+    container.appendChild(row);
+  });
+}
+function preview(type,i){
+  const t = ctx.currentTime + .005;
+  if(type==='drums') playDrum(i,t);
+  else if(type==='voices'){ if(vBuf[i]) playVoice(i,t); else toast(VOICES[i].emoji+' ist noch leer – nimm etwas auf oder hol dir ein Geräusch aus der Bibliothek!'); }
+  else playNote(i,t);
+}
+function renderCells(){
+  const p = S.patterns[S.edit];
+  ['drums','voices','melody'].forEach(type=>{
+    cellRefs[type].forEach((row,ri)=>row.forEach((c,s)=>c.classList.toggle('on', p[type][ri][s])));
+  });
+}
+
+function buildBeatGrid(){
+  cols = [];
+  const beat = $('beatGrid'); beat.innerHTML='';
+  const dWrap = el('div','grid'); const vWrap = el('div','grid');
+  buildGrid(dWrap,'drums',DRUMS);
+  buildGrid(vWrap,'voices',VOICES);
+  vWrap.style.marginTop='6px';
+  beat.appendChild(dWrap); beat.appendChild(vWrap);
+  buildGrid($('melGrid'),'melody',NOTES);
+  updateVoiceLabels();
+  renderCells();
+}
+function updateVoiceLabels(){
+  const rows = $('beatGrid').querySelectorAll('.grid')[1].querySelectorAll('.lab');
+  rows.forEach((l,i)=>l.classList.toggle('empty', !vBuf[i]));
+}
+
+/* Segmented buttons */
+function seg(container, items, current, onPick){
+  container.innerHTML='';
+  Object.entries(items).forEach(([key,it])=>{
+    const b = el('button','btn small'+(key===current?' sel':''), `${it.emoji} ${it.name}`);
+    b.addEventListener('click',()=>{ onPick(key); container.querySelectorAll('.btn').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); });
+    container.appendChild(b);
+  });
+}
+
+/* Patterns */
+function buildPatButtons(){
+  const c = $('patSeg'); c.innerHTML='';
+  ['A','B','C','D'].forEach((L,i)=>{
+    const b = el('button','btn pat', `${L}<span class="dot"></span>`);
+    b.setAttribute('aria-label','Loop '+L);
+    b.addEventListener('click',()=>{ S.edit=i; renderCells(); updatePatButtons(); save(); clearNow(); });
+    c.appendChild(b);
+  });
+  updatePatButtons();
+}
+function updatePatButtons(playingIdx){
+  $('patSeg').querySelectorAll('.pat').forEach((b,i)=>{
+    b.classList.toggle('sel', i===S.edit);
+    b.classList.toggle('filled', !isEmpty(S.patterns[i]));
+    if(playingIdx!==undefined) b.classList.toggle('playing', i===playingIdx);
+  });
+  $('chainBtn').classList.toggle('sel', S.chain);
+}
+function clearNow(){ document.querySelectorAll('.cell.now').forEach(c=>c.classList.remove('now')); }
+
+/* Draw loop */
+let lastShown = -1;
+function draw(){
+  if(ctx && playing){
+    const now = ctx.currentTime; let ev=null;
+    while(drawQ.length && drawQ[0].time <= now) ev = drawQ.shift();
+    if(ev) showStep(ev);
+  }
+  requestAnimationFrame(draw);
+}
+function showStep(ev){
+  if(S.chain && ev.pat!==S.edit && ev.step===0){ S.edit=ev.pat; renderCells(); }
+  clearNow();
+  if(ev.pat===S.edit){
+    cols[ev.step].forEach(c=>{
+      c.classList.add('now');
+      if(c.classList.contains('on')){ c.classList.remove('hit'); void c.offsetWidth; c.classList.add('hit'); }
+    });
+  }
+  if(lastShown!==ev.pat || ev.step===0){ updatePatButtons(ev.pat); lastShown=ev.pat; }
+}
+
+/* Zaubern */
+const rnd = n => Math.floor(Math.random()*n);
+const chance = p => Math.random()<p;
+function magic(){
+  const p = emptyPattern();
+  [0,8].forEach(s=>p.drums[0][s]=true);
+  [3,6,10,11,14].forEach(s=>{ if(chance(.3)) p.drums[0][s]=true; });
+  [4,12].forEach(s=>p.drums[1][s]=true);
+  if(chance(.4)) p.drums[1][15]=true;
+  const hatStep = chance(.5)?1:2;
+  for(let s=0;s<STEPS;s+=hatStep) if(hatStep===2 || chance(.8)) p.drums[2][s]=true;
+  for(let k=rnd(3);k>0;k--) p.drums[3][rnd(16)]=true;
+  for(let k=rnd(3);k>0;k--) p.drums[4][rnd(8)*2]=true;
+  for(let k=2+rnd(3);k>0;k--) p.drums[5][rnd(16)]=true;
+  let n = 3+rnd(3);
+  for(let s=0;s<STEPS;s++){
+    if(chance(s%4===0?.6:.3)){
+      n = Math.max(0, Math.min(NOTES.length-1, n + rnd(5)-2));
+      p.melody[n][s]=true;
+    }
+  }
+  VOICES.forEach((_,i)=>{ if(vBuf[i]) for(let k=1+rnd(2);k>0;k--) p.voices[i][rnd(8)*2]=true; });
+  S.patterns[S.edit]=p; renderCells(); updatePatButtons(); save();
+  if(!playing) start();
+}
+
+/* Voice studio */
+let micStream=null, rec=null, recSlot=-1, recTimer=null, recCount=null, pendingFileSlot=0;
+const recBtns=[], canvases=[];
+function buildVoices(){
+  const box = $('voices'); box.innerHTML='';
+  VOICES.forEach((v,i)=>{
+    const card = el('div','vcard'); card.style.setProperty('--c', v.color);
+    card.innerHTML = `
+      <div class="vhead"><div class="vemoji">${v.emoji}</div><canvas width="300" height="60"></canvas></div>
+      <div class="vname"></div>
+      <button class="btn rec">🎤 Aufnehmen</button>
+      <div class="vrow">
+        <button class="btn small" data-a="play" aria-label="Abspielen">▶</button>
+        <button class="btn small" data-p="1.7" title="Mäusestimme">🐭</button>
+        <button class="btn small sel" data-p="1" title="normal">🙂</button>
+        <button class="btn small" data-p="0.6" title="Bärenstimme">🐻</button>
+      </div>
+      <div class="vrow">
+        <button class="btn small" data-a="rev">🔁 Rückwärts</button>
+        <button class="btn small" data-a="file" aria-label="Datei laden">📂 Datei</button>
+      </div>`;
+    const rb = card.querySelector('.rec'); recBtns[i]=rb;
+    rb.addEventListener('click',()=>toggleRecord(i));
+    canvases[i] = card.querySelector('canvas');
+    drawWave(i);
+    card.querySelectorAll('[data-p]').forEach(b=>b.addEventListener('click',()=>{
+      vSet[i].pitch = parseFloat(b.dataset.p);
+      card.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('sel', x===b));
+      ensureAudio(); if(vBuf[i]) playVoice(i, ctx.currentTime+.01);
+    }));
+    card.querySelector('[data-a=play]').addEventListener('click',()=>{ ensureAudio(); preview('voices',i); });
+    const revB = card.querySelector('[data-a=rev]');
+    revB.addEventListener('click',()=>{ vSet[i].rev=!vSet[i].rev; revB.classList.toggle('sel',vSet[i].rev); ensureAudio(); if(vBuf[i]) playVoice(i, ctx.currentTime+.01); });
+    card.querySelector('[data-a=file]').addEventListener('click',()=>{ ensureAudio(); pickFile(i); });
+    box.appendChild(card);
+  });
+}
+function pickFile(i){ pendingFileSlot=i; const f=$('fileIn'); f.value=''; f.click(); }
+$('fileIn').addEventListener('change', async e=>{
+  const file = e.target.files && e.target.files[0]; if(!file) return;
+  try{ await loadVoice(pendingFileSlot, await file.arrayBuffer(), '📂 '+file.name); }
+  catch(err){ toast('Diese Datei kann ich leider nicht abspielen 🙈'); }
+});
+
+async function toggleRecord(i){
+  ensureAudio();
+  if(rec && recSlot===i){ stopRec(); return; }
+  if(rec) stopRec();
+  try{
+    if(!navigator.mediaDevices || !window.MediaRecorder) throw new Error('nope');
+    if(!micStream) micStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+  }catch(e){ showMicHelp(i); return; }
+  const chunks=[]; const r = new MediaRecorder(micStream);
+  r.ondataavailable = ev=>{ if(ev.data && ev.data.size) chunks.push(ev.data); };
+  r.onstop = async ()=>{
+    setRecUI(i,false);
+    try{ await loadVoice(i, await new Blob(chunks,{type:r.mimeType}).arrayBuffer()); }
+    catch(err){ toast('Aufnahme hat nicht geklappt – noch mal versuchen!'); }
+  };
+  r.start(); rec=r; recSlot=i; setRecUI(i,true);
+  let left=5; recBtns[i].textContent=`⏹ Stopp (${left})`;
+  recCount = setInterval(()=>{ left--; if(left>0) recBtns[i].textContent=`⏹ Stopp (${left})`; },1000);
+  recTimer = setTimeout(stopRec, 5000);
+}
+function stopRec(){
+  clearTimeout(recTimer); clearInterval(recCount);
+  if(rec && rec.state!=='inactive') rec.stop();
+  rec=null; recSlot=-1;
+}
+function setRecUI(i,on){
+  recBtns[i].classList.toggle('live',on);
+  if(!on) recBtns[i].textContent = vBuf[i] ? '🎤 Neu aufnehmen' : '🎤 Aufnehmen';
+}
+function showMicHelp(i){ pendingFileSlot=i; $('micDlg').classList.add('open'); }
+$('micCancel').addEventListener('click',()=>$('micDlg').classList.remove('open'));
+$('micLib').addEventListener('click',()=>{ $('micDlg').classList.remove('open'); $('library').scrollIntoView({behavior:'smooth'}); });
+$('micFile').addEventListener('click',()=>{ $('micDlg').classList.remove('open'); pickFile(pendingFileSlot); });
+
+function decode(ab){ return new Promise((res,rej)=>{ const p=ctx.decodeAudioData(ab,res,rej); if(p&&p.then) p.then(res,rej); }); }
+async function loadVoice(i, ab, label){
+  ensureAudio();
+  setVoice(i, await decode(ab), label || '🎤 eigene Aufnahme');
+  S.voiceSrc[i]=null; save();
+}
+function setVoice(i, b, label, quiet){
+  const [out,rev] = processBuffer(b);
+  vBuf[i]=out; vRev[i]=rev; vName[i]=label;
+  const vn = document.querySelectorAll('.vname')[i]; if(vn) vn.textContent = label;
+  drawWave(i); updateVoiceLabels(); setRecUI(i,false); buildPads();
+  if(quiet) return;
+  playVoice(i, ctx.currentTime+.02);
+  toast(VOICES[i].emoji+' Super! Jetzt im Rhythmus-Raster Kästchen antippen.');
+}
+function processBuffer(b){
+  const len=b.length, sr=b.sampleRate, ch=b.numberOfChannels;
+  const d = new Float32Array(len);
+  for(let c=0;c<ch;c++){ const x=b.getChannelData(c); for(let j=0;j<len;j++) d[j]+=x[j]/ch; }
+  let peak=0; for(let j=0;j<len;j++){ const a=Math.abs(d[j]); if(a>peak) peak=a; }
+  const th = Math.max(.015, peak*.08);
+  let s=0; while(s<len && Math.abs(d[s])<th) s++;
+  let e=len-1; while(e>s && Math.abs(d[e])<th) e--;
+  s=Math.max(0, s-Math.floor(sr*.02)); e=Math.min(len, e+Math.floor(sr*.08));
+  if(e-s < sr*.05){ s=0; e=len; }
+  e = Math.min(e, s+sr*6);
+  const n=e-s, g = peak>0 ? .9/peak : 1;
+  const out=ctx.createBuffer(1,n,sr), o=out.getChannelData(0);
+  for(let j=0;j<n;j++){
+    const fi=Math.min(1,j/(sr*.005)), fo=Math.min(1,(n-j)/(sr*.01));
+    o[j]=d[s+j]*g*fi*fo;
+  }
+  const rev=ctx.createBuffer(1,n,sr), r=rev.getChannelData(0);
+  for(let j=0;j<n;j++) r[j]=o[n-1-j];
+  return [out,rev];
+}
+function drawWave(i){
+  const c=canvases[i]; if(!c) return; const g=c.getContext('2d');
+  g.clearRect(0,0,c.width,c.height);
+  g.fillStyle='#2B2340';
+  if(!vBuf[i]){
+    g.globalAlpha=.35; g.font='600 20px Fredoka, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    g.fillText('noch leer', c.width/2, c.height/2); g.globalAlpha=1; return;
+  }
+  const d=vBuf[i].getChannelData(0), W=c.width, H=c.height, step=Math.max(1,Math.floor(d.length/W));
+  for(let x=0;x<W;x++){
+    let m=0; for(let j=x*step;j<(x+1)*step && j<d.length;j++){ const a=Math.abs(d[j]); if(a>m) m=a; }
+    const h=Math.max(2,m*H*.9); g.fillRect(x,(H-h)/2,1,h);
+  }
+}
+
+/* Live pads */
+let liveRec=false;
+function buildPads(){
+  const box=$('pads'); box.innerHTML='';
+  const add=(type,i,emoji,label,color,dim)=>{
+    const p=el('button','pad'+(dim?' dim':''),`${emoji}<small>${label}</small>`);
+    p.style.setProperty('--c',color);
+    p.addEventListener('pointerdown',e=>{
+      e.preventDefault(); ensureAudio();
+      p.classList.add('press'); setTimeout(()=>p.classList.remove('press'),120);
+      hitLive(type,i);
+    });
+    box.appendChild(p);
+  };
+  DRUMS.forEach((d,i)=>add('d',i,d.emoji,d.name,d.color));
+  [...NOTES].reverse().forEach((n,ri)=>{ const i=NOTES.length-1-ri; add('m',i,'🎵',n.n,n.c); });
+  VOICES.forEach((v,i)=>add('v',i,v.emoji,v.name,v.color,!vBuf[i]));
+}
+function hitLive(type,i){
+  const t=ctx.currentTime+.005;
+  if(type==='d') playDrum(i,t); else if(type==='m') playNote(i,t); else if(vBuf[i]) playVoice(i,t);
+  if(!(liveRec && playing && hist.length)) return;
+  const now=ctx.currentTime;
+  let last=hist[0]; for(const h of hist) if(h.time<=now) last=h;
+  const late = (now-last.time) > stepDur()/2;
+  const step = late ? (last.step+1)%STEPS : last.step;
+  const pi = S.edit;
+  const g = S.patterns[pi][type==='d'?'drums':type==='v'?'voices':'melody'];
+  if(type==='v' && !vBuf[i]) return;
+  g[i][step]=true;
+  if(late) liveSkip.add(pi+':'+step+':'+type+':'+i);
+  renderCells(); updatePatButtons(); save();
+}
+
+/* Toast */
+let toastT;
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+
+/* ---------- Geräusche-Bibliothek ---------- */
+const GROUPS = {
+  all:   {name:'Alle',      emoji:'⭐'},
+  tiere: {name:'Tiere',     emoji:'🐾'},
+  mensch:{name:'Menschen',  emoji:'🙂'},
+  haus:  {name:'Zuhause',   emoji:'🏠'},
+  natur: {name:'Natur',     emoji:'🌳'},
+  fahr:  {name:'Fahrzeuge & Maschinen', emoji:'🚗'},
+};
+// id: [Name, Emoji, Gruppe, Suchwörter]
+const CATS = {
+  dog:['Hund','🐶','tiere','bellen wuff'], cat:['Katze','🐱','tiere','miau'], cow:['Kuh','🐮','tiere','muh bauernhof'],
+  pig:['Schwein','🐷','tiere','grunzen oink bauernhof'], sheep:['Schaf','🐑','tiere','mäh bauernhof'], hen:['Huhn','🐔','tiere','gackern henne bauernhof'],
+  rooster:['Hahn','🐓','tiere','kikeriki bauernhof'], frog:['Frosch','🐸','tiere','quaken'], crow:['Krähe','🪶','tiere','vogel rabe krächzen'],
+  chirping_birds:['Vögel','🐦','tiere','zwitschern singen vogel'], insects:['Insekten','🐝','tiere','summen biene fliege'], crickets:['Grillen','🦗','tiere','zirpen nacht'],
+  laughing:['Lachen','😂','mensch','kichern lustig'], crying_baby:['Baby weint','👶','mensch','weinen schreien'], sneezing:['Niesen','🤧','mensch','hatschi'],
+  coughing:['Husten','😷','mensch','krank'], snoring:['Schnarchen','😴','mensch','schlafen'], breathing:['Atmen','😮‍💨','mensch','luft pusten'],
+  clapping:['Klatschen','👏','mensch','applaus hände'], footsteps:['Schritte','👣','mensch','gehen laufen füße'], drinking_sipping:['Schlürfen','🥤','mensch','trinken'],
+  brushing_teeth:['Zähneputzen','🪥','mensch','zahnbürste bad'],
+  door_wood_knock:['Klopfen','✊','haus','tür klopf'], door_wood_creaks:['Tür knarrt','🚪','haus','quietschen gruselig'], clock_tick:['Uhr tickt','🕰️','haus','tick tack'],
+  clock_alarm:['Wecker','⏰','haus','klingeln alarm'], toilet_flush:['Klospülung','🚽','haus','toilette wc bad'], vacuum_cleaner:['Staubsauger','🧹','haus','saugen putzen'],
+  washing_machine:['Waschmaschine','🧺','haus','wäsche schleudern'], keyboard_typing:['Tippen','⌨️','haus','tastatur computer'], mouse_click:['Mausklick','🖱️','haus','klick computer'],
+  can_opening:['Dose öffnen','🥫','haus','zisch getränk'], glass_breaking:['Glas zerbricht','🍷','haus','scherben klirren kaputt'], pouring_water:['Wasser gießen','🚰','haus','einschenken'],
+  water_drops:['Tropfen','💧','natur','tropfen wasser plopp'],
+  rain:['Regen','🌧️','natur','wetter'], thunderstorm:['Gewitter','⛈️','natur','donner blitz wetter'], wind:['Wind','🌬️','natur','sturm pusten wetter'],
+  sea_waves:['Meer','🌊','natur','wellen strand rauschen'], crackling_fire:['Lagerfeuer','🔥','natur','knistern feuer'], fireworks:['Feuerwerk','🎆','natur','silvester knallen böller'],
+  church_bells:['Kirchenglocken','⛪','natur','glocke läuten bimbam'],
+  car_horn:['Hupe','🚗','fahr','auto hupen tröt'], engine:['Motor','🏎️','fahr','auto brumm'], train:['Zug','🚂','fahr','eisenbahn tschu'],
+  airplane:['Flugzeug','✈️','fahr','fliegen'], helicopter:['Hubschrauber','🚁','fahr','helikopter'], siren:['Sirene','🚨','fahr','polizei feuerwehr tatütata krankenwagen'],
+  chainsaw:['Kettensäge','🌲','fahr','säge baum werkzeug'], hand_saw:['Säge','🪚','fahr','sägen werkzeug holz'],
+};
+const packs = {}, packWait = {}, clipCache = {};
+window.KL_SOUNDS = (cat, items) => { packs[cat] = items; (packWait[cat]||[]).forEach(f=>f.res(items)); delete packWait[cat]; };
+function loadPack(cat){
+  if(packs[cat]) return Promise.resolve(packs[cat]);
+  return new Promise((res,rej)=>{
+    if(packWait[cat]){ packWait[cat].push({res,rej}); return; }
+    packWait[cat] = [{res,rej}];
+    const s = document.createElement('script');
+    s.src = 'sounds/'+cat+'.js';
+    s.onerror = ()=>{ (packWait[cat]||[]).forEach(f=>f.rej(new Error('pack'))); delete packWait[cat]; s.remove(); };
+    document.head.appendChild(s);
+  });
+}
+function b64ToBuf(b64){
+  const bin = atob(b64), u = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  return u.buffer;
+}
+async function getClip(cat, i){
+  const key = cat+':'+i;
+  if(clipCache[key]) return clipCache[key];
+  const items = await loadPack(cat);
+  const buf = await decode(b64ToBuf(items[i][0]));
+  clipCache[key] = buf; return buf;
+}
+let libGroup='all', libCat=null, libPick=null, libSrc=null;
+function buildLibrary(){
+  const g = $('libGroups'); g.innerHTML='';
+  Object.entries(GROUPS).forEach(([k,v])=>{
+    const b = el('button','btn small'+(k===libGroup?' sel':''), `${v.emoji} ${v.name}`);
+    b.addEventListener('click',()=>{ libGroup=k; $('libSearch').value=''; buildLibrary(); });
+    g.appendChild(b);
+  });
+  renderCats();
+}
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+function renderCats(){
+  const q = norm($('libSearch').value.trim());
+  const box = $('libCats'); box.innerHTML='';
+  const list = Object.entries(CATS).filter(([id,[name,,grp,kw]])=>{
+    if(q) return norm(name+' '+kw).includes(q);
+    return libGroup==='all' || grp===libGroup;
+  });
+  if(!list.length){ box.innerHTML='<span class="hint">Nichts gefunden – probier ein anderes Wort 🙂</span>'; return; }
+  list.forEach(([id,[name,emoji]])=>{
+    const b = el('button','cat'+(id===libCat?' sel':''), `<span class="ce">${emoji}</span>${name}`);
+    b.addEventListener('click',()=>openCat(id));
+    box.appendChild(b);
+  });
+}
+async function openCat(id){
+  ensureAudio();
+  libCat=id; renderCats();
+  const box=$('libClips'); box.innerHTML='<span class="hint">Lade Geräusche …</span>';
+  let items;
+  try{ items = await loadPack(id); }
+  catch(e){ box.innerHTML='<span class="hint">Die Geräusche-Dateien fehlen. Der Ordner „sounds“ muss neben der Seite liegen.</span>'; return; }
+  if(libCat!==id) return;
+  box.innerHTML='';
+  const [name,emoji]=CATS[id];
+  items.forEach((it,i)=>{
+    const b = el('button','clip', `${emoji}<small>${i+1}</small>`);
+    b.setAttribute('aria-label', name+' '+(i+1));
+    b.addEventListener('click',()=>pickClip(id,i,b));
+    box.appendChild(b);
+  });
+  pickClip(id,0,box.firstChild);
+}
+async function pickClip(cat,i,btn){
+  ensureAudio();
+  document.querySelectorAll('.clip.sel').forEach(x=>x.classList.remove('sel'));
+  if(btn){ btn.classList.add('sel','playing'); setTimeout(()=>btn.classList.remove('playing'),260); }
+  libPick={cat,i};
+  const [name,emoji]=CATS[cat]; const it=packs[cat][i];
+  $('pickTitle').textContent = `${emoji} ${name} ${i+1}`;
+  const lic = it[2]; const url = it[3];
+  $('pickCredit').innerHTML = '';
+  $('pickCredit').append('Aufnahme von ');
+  const a = el('a'); a.textContent = it[1]; if(url){ a.href=url; a.target='_blank'; a.rel='noopener'; }
+  $('pickCredit').append(a, ` · Lizenz: ${lic} · ${it[4]} Sek.`);
+  $('libPicked').classList.add('show');
+  try{ previewClip(await getClip(cat,i)); }catch(e){ toast('Dieses Geräusch klappt gerade nicht 🙈'); }
+}
+function previewClip(buf){
+  if(libSrc){ try{libSrc.stop();}catch(e){} }
+  libSrc = ctx.createBufferSource(); libSrc.buffer=buf; libSrc.connect(voiceBus); libSrc.start();
+}
+function buildPickSlots(){
+  const box=$('pickSlots'); box.innerHTML='';
+  VOICES.forEach((v,i)=>{
+    const b=el('button','btn slotbtn',v.emoji); b.style.setProperty('--c',v.color);
+    b.title='In '+v.name+' legen'; b.setAttribute('aria-label','In '+v.name+' legen');
+    b.addEventListener('click',async()=>{
+      if(!libPick) return;
+      const {cat,i:ci}=libPick;
+      try{ setVoice(i, await getClip(cat,ci), CATS[cat][1]+' '+CATS[cat][0]+' '+(ci+1)); S.voiceSrc[i]={c:cat,n:ci}; save(); }
+      catch(e){ toast('Das hat nicht geklappt 🙈'); }
+    });
+    box.appendChild(b);
+  });
+}
+async function randomClip(){
+  ensureAudio();
+  const ids=Object.keys(CATS); const id=ids[rnd(ids.length)];
+  libGroup='all'; $('libSearch').value='';
+  await openCat(id); buildLibrary();
+  const n=(packs[id]||[]).length; if(!n) return;
+  const k=rnd(n); pickClip(id,k,$('libClips').children[k]);
+}
+
+// Geräusche aus der Bibliothek nach dem Neuladen wieder in die Slots legen
+async function restoreVoices(){
+  for(let i=0;i<VOICES.length;i++){
+    const v=S.voiceSrc[i]; if(!v || !CATS[v.c]) continue;
+    try{ ensureAudio(); setVoice(i, await getClip(v.c,v.n), CATS[v.c][1]+' '+CATS[v.c][0]+' '+(v.n+1), true); }
+    catch(e){ S.voiceSrc[i]=null; }
+  }
+}
+
+/* ---------- Song-Export ---------- */
+let downloads = null;
+try{
+  if(window.claude && typeof window.claude.use==='function')
+    window.claude.use('downloads').then(d=>{ downloads=d; }).catch(()=>{});
+}catch(e){}
+let lastSong = null;  // {blob, name}
+
+function songSequence(){
+  const filled=[0,1,2,3].filter(i=>!isEmpty(S.patterns[i]));
+  if(S.chain && filled.length>1) return [...filled,...filled];
+  return [S.edit,S.edit,S.edit,S.edit];
+}
+async function renderSong(){
+  const seq=songSequence(), sd=stepDur(), sr=44100;
+  const dur = seq.length*STEPS*sd + 2.2;
+  const off = new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(2, Math.ceil(sr*dur), sr);
+  const saved = grabGraph(), savedLast = vLast.slice();
+  try{
+    setupGraph(off); vLast.fill(null);
+    let t=.05;
+    seq.forEach(pi=>{ for(let s=0;s<STEPS;s++){ playStep(pi,s,t,true); t+=sd; } });
+  } finally {
+    putGraph(saved); savedLast.forEach((v,i)=>vLast[i]=v);
+  }
+  return await off.startRendering();
+}
+function encodeWAV(buf){
+  const ch=buf.numberOfChannels, len=buf.length, sr=buf.sampleRate;
+  const ab=new ArrayBuffer(44+len*ch*2), v=new DataView(ab);
+  const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4,36+len*ch*2,true); w(8,'WAVE'); w(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,ch,true); v.setUint32(24,sr,true);
+  v.setUint32(28,sr*ch*2,true); v.setUint16(32,ch*2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,len*ch*2,true);
+  const data=[]; for(let c=0;c<ch;c++) data.push(buf.getChannelData(c));
+  let o=44;
+  for(let i=0;i<len;i++) for(let c=0;c<ch;c++){ const x=Math.max(-1,Math.min(1,data[c][i])); v.setInt16(o, x<0?x*0x8000:x*0x7FFF, true); o+=2; }
+  return new Blob([ab],{type:'audio/wav'});
+}
+function recordCompressed(buf, onProg){
+  return new Promise((res,rej)=>{
+    const types=['audio/webm;codecs=opus','audio/webm','audio/mp4'];
+    const mt = window.MediaRecorder && types.find(t=>MediaRecorder.isTypeSupported(t));
+    if(!mt) return rej(new Error('no recorder'));
+    const dest=ctx.createMediaStreamDestination();
+    const src=ctx.createBufferSource(); src.buffer=buf;
+    src.connect(dest); src.connect(master);
+    const chunks=[]; const r=new MediaRecorder(dest.stream,{mimeType:mt});
+    r.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+    r.onstop=()=>{ clearInterval(iv); res({blob:new Blob(chunks,{type:mt}), ext: mt.includes('mp4')?'mp4':'webm'}); };
+    const t0=ctx.currentTime;
+    const iv=setInterval(()=>onProg(Math.min(1,(ctx.currentTime-t0)/buf.duration)),200);
+    src.onended=()=>setTimeout(()=>r.stop(),150);
+    r.start(); src.start();
+  });
+}
+function songName(ext){
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  return `mein-song-${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.${ext}`;
+}
+function expUI(title,text,prog,{save=false,listen=false}={}){
+  $('expTitle').textContent=title; $('expText').textContent=text;
+  $('expBar').style.width=Math.round(prog*100)+'%';
+  $('expSave').hidden=!save; $('expListen').hidden=!listen;
+}
+let songSrc=null;
+async function exportSong(){
+  ensureAudio();
+  if(playing) stop();
+  if([0,1,2,3].every(i=>isEmpty(S.patterns[i]))){ toast('Dein Song ist noch leer – tippe erst ein paar Kästchen an!'); return; }
+  lastSong=null;
+  $('expDlg').classList.add('open');
+  expUI('💾 Song wird gebaut …','Ich mische alle Spuren zusammen.',.05);
+  try{
+    const buf = await renderSong();
+    if(downloads){
+      expUI('🎧 Song wird aufgenommen …','Hör mal rein – so klingt dein Song! Gleich ist er fertig.',0);
+      const {blob,ext} = await recordCompressed(buf, p=>expUI('🎧 Song wird aufgenommen …','Hör mal rein – so klingt dein Song! Gleich ist er fertig.',p));
+      lastSong={blob,name:songName(ext),buf};
+    } else {
+      lastSong={blob:encodeWAV(buf),name:songName('wav'),buf};
+    }
+    expUI('🎉 Fertig!',`Dein Song ist ${Math.round(buf.duration)} Sekunden lang. Jetzt speichern?`,1,{save:true,listen:true});
+  }catch(e){
+    expUI('😕 Das hat nicht geklappt','Der Song konnte in diesem Browser nicht gebaut werden. Versuch es noch einmal oder in einem anderen Browser.',0);
+  }
+}
+async function saveSong(){
+  if(!lastSong) return;
+  if(downloads){
+    try{
+      await downloads.save({filename:lastSong.name, data:lastSong.blob});
+      expUI('✅ Gespeichert!','Dein Song liegt jetzt in deinen Downloads.',1,{listen:true});
+    }catch(err){
+      const code = err && err.code;
+      if(code==='declined') expUI('🎉 Fertig!','Nicht gespeichert. Du kannst es noch einmal versuchen.',1,{save:true,listen:true});
+      else if(code==='rate_limited') toast('Einen Moment – dann noch mal tippen.');
+      else expUI('😕 Speichern geht hier nicht','In dieser Ansicht kann leider nichts gespeichert werden.',1,{listen:true});
+    }
+    return;
+  }
+  const url=URL.createObjectURL(lastSong.blob);
+  const a=document.createElement('a'); a.href=url; a.download=lastSong.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+  expUI('✅ Gespeichert!','Schau in deinen Downloads nach: '+lastSong.name,1,{listen:true});
+}
+function listenSong(){
+  if(!lastSong) return;
+  ensureAudio();
+  if(songSrc){ try{songSrc.stop();}catch(e){} songSrc=null; $('expListen').textContent='▶ Anhören'; return; }
+  songSrc=ctx.createBufferSource(); songSrc.buffer=lastSong.buf; songSrc.connect(master); songSrc.start();
+  $('expListen').textContent='⏹ Stopp';
+  songSrc.onended=()=>{ songSrc=null; $('expListen').textContent='▶ Anhören'; };
+}
+
+/* ---------- Verdrahtung ---------- */
+$('exportBtn').addEventListener('click',exportSong);
+$('expSave').addEventListener('click',saveSong);
+$('expListen').addEventListener('click',listenSong);
+$('expClose').addEventListener('click',()=>{ if(songSrc){ try{songSrc.stop();}catch(e){} } $('expDlg').classList.remove('open'); });
+$('libSearch').addEventListener('input',()=>{ if($('libSearch').value) document.querySelectorAll('#libGroups .btn').forEach(b=>b.classList.remove('sel')); renderCats(); });
+$('libRandom').addEventListener('click',randomClip);
+$('pickPlay').addEventListener('click',async()=>{ if(libPick){ ensureAudio(); previewClip(await getClip(libPick.cat,libPick.i)); } });
+playBtn.addEventListener('click',()=>playing?stop():start());
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space' && !/INPUT|TEXTAREA/.test(e.target.tagName)){ e.preventDefault(); playing?stop():start(); }
+});
+const bpmIn=$('bpm');
+bpmIn.value=S.bpm; $('bpmVal').textContent=S.bpm;
+bpmIn.addEventListener('input',()=>{ S.bpm=+bpmIn.value; $('bpmVal').textContent=S.bpm; syncDelay(); save(); });
+seg($('kitSeg'),KITS,S.kit,k=>{ S.kit=k; routeDrums(); save(); ensureAudio(); playDrum(0,ctx.currentTime+.01); playDrum(1,ctx.currentTime+.25); });
+seg($('instSeg'),INSTS,S.inst,k=>{ S.inst=k; save(); ensureAudio(); [7,5,3].forEach((n,j)=>playNote(n,ctx.currentTime+.01+j*.15)); });
+$('magicBtn').addEventListener('click',()=>{ ensureAudio(); magic(); });
+let clearArmed=false, clearT;
+$('clearBtn').addEventListener('click',()=>{
+  const b=$('clearBtn');
+  if(!clearArmed){ clearArmed=true; b.textContent='❗ Sicher?'; clearT=setTimeout(()=>{clearArmed=false;b.textContent='🧹 Leeren';},2500); return; }
+  clearTimeout(clearT); clearArmed=false; b.textContent='🧹 Leeren';
+  S.patterns[S.edit]=emptyPattern(); renderCells(); updatePatButtons(); save();
+});
+$('copyBtn').addEventListener('click',()=>{
+  const to=(S.edit+1)%4;
+  S.patterns[to]=JSON.parse(JSON.stringify(S.patterns[S.edit]));
+  S.edit=to; renderCells(); updatePatButtons(); save(); clearNow();
+  toast('Kopiert nach '+'ABCD'[to]+' – jetzt kannst du es verändern!');
+});
+$('chainBtn').addEventListener('click',()=>{
+  S.chain=!S.chain; updatePatButtons(); save();
+  toast(S.chain?'⛓ Kette an: alle Loops spielen nacheinander':'Kette aus: nur der gewählte Loop spielt');
+});
+$('liveRecBtn').addEventListener('click',()=>{
+  liveRec=!liveRec; $('liveRecBtn').classList.toggle('sel',liveRec);
+  if(liveRec && !playing) toast('Starte den Beat mit ▶ – dann wird mitgeschrieben');
+});
+$('helpBtn').addEventListener('click',()=>$('tips').classList.toggle('open'));
+
+buildVoices();
+buildBeatGrid();
+buildPatButtons();
+buildPads();
+buildLibrary();
+buildPickSlots();
+restoreVoices();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>
