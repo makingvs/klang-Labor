@@ -168,7 +168,7 @@ h1{margin:0;font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:.5px;l
     <li><b>▶ Start</b> drücken (oder Leertaste) – der Beat läuft immer im Kreis.</li>
     <li><b>🐢 / 🐇</b> macht die Musik langsamer oder schneller.</li>
     <li><b>Meine Klänge:</b> Nimm Geräusche auf (singen, klatschen, „Bumm“ sagen …) oder hol dir eins aus der <b>Bibliothek</b> (Hund, Zug, Regen, Niesen …). Dann tauchen sie im Rhythmus-Raster auf!</li>
-    <li><b>💾 Song speichern</b> macht aus deinem Beat eine Musik-Datei.</li>
+    <li><b>💾 Song speichern</b> macht aus deinem Beat eine MP3-Datei.</li>
     <li><b>A B C D</b> sind vier Loops. Mit <b>⛓ Kette</b> spielen sie nacheinander – ein ganzes Lied.</li>
     <li><b>🎲 Zaubern</b> erfindet einen zufälligen Beat. <b>Live-Pads:</b> einfach draufhauen – mit <b>⏺</b> wird mitgeschrieben.</li>
   </ul>
@@ -219,7 +219,7 @@ h1{margin:0;font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:.5px;l
 
 <!-- Library -->
 <section class="card" id="library">
-  <h2><span class="num">4</span> Geräusche-Bibliothek <span class="hint">– 2.000 echte Geräusche aus dem Alltag</span></h2>
+  <h2><span class="num">4</span> Geräusche-Bibliothek <span class="hint">– 2.080 Geräusche aus dem Alltag</span></h2>
   <div class="libtop">
     <input class="search" id="libSearch" type="search" placeholder="🔎 Suchen: Hund, Regen, Zug, Lachen …" aria-label="Geräusch suchen">
     <button class="btn" id="libRandom">🎲 Überrasch mich</button>
@@ -279,6 +279,7 @@ h1{margin:0;font-size:clamp(26px,5vw,38px);font-weight:700;letter-spacing:.5px;l
 <input type="file" id="fileIn" accept="audio/*" hidden>
 <div class="toast" id="toast"></div>
 
+<script src="lib/lame.min.js"></script>
 <script>
 "use strict";
 /* ---------- Daten ---------- */
@@ -861,6 +862,7 @@ const CATS = {
   coughing:['Husten','😷','mensch','krank'], snoring:['Schnarchen','😴','mensch','schlafen'], breathing:['Atmen','😮‍💨','mensch','luft pusten'],
   clapping:['Klatschen','👏','mensch','applaus hände'], footsteps:['Schritte','👣','mensch','gehen laufen füße'], drinking_sipping:['Schlürfen','🥤','mensch','trinken'],
   brushing_teeth:['Zähneputzen','🪥','mensch','zahnbürste bad'],
+  fart:['Pups','💨','mensch','furz pupsen furzen pupsi puh stinken fart'], burp:['Rülpser','🫧','mensch','rülpsen bäuerchen burp'],
   door_wood_knock:['Klopfen','✊','haus','tür klopf'], door_wood_creaks:['Tür knarrt','🚪','haus','quietschen gruselig'], clock_tick:['Uhr tickt','🕰️','haus','tick tack'],
   clock_alarm:['Wecker','⏰','haus','klingeln alarm'], toilet_flush:['Klospülung','🚽','haus','toilette wc bad'], vacuum_cleaner:['Staubsauger','🧹','haus','saugen putzen'],
   washing_machine:['Waschmaschine','🧺','haus','wäsche schleudern'], keyboard_typing:['Tippen','⌨️','haus','tastatur computer'], mouse_click:['Mausklick','🖱️','haus','klick computer'],
@@ -950,9 +952,13 @@ async function pickClip(cat,i,btn){
   $('pickTitle').textContent = `${emoji} ${name} ${i+1}`;
   const lic = it[2]; const url = it[3];
   $('pickCredit').innerHTML = '';
-  $('pickCredit').append('Aufnahme von ');
-  const a = el('a'); a.textContent = it[1]; if(url){ a.href=url; a.target='_blank'; a.rel='noopener'; }
-  $('pickCredit').append(a, ` · Lizenz: ${lic} · ${it[4]} Sek.`);
+  if(!url){
+    $('pickCredit').append(`Am Computer erzeugt · frei nutzbar (${lic}) · ${it[4]} Sek.`);
+  } else {
+    $('pickCredit').append('Aufnahme von ');
+    const a = el('a'); a.textContent = it[1]; a.href=url; a.target='_blank'; a.rel='noopener';
+    $('pickCredit').append(a, ` · Lizenz: ${lic} · ${it[4]} Sek.`);
+  }
   $('libPicked').classList.add('show');
   try{ previewClip(await getClip(cat,i)); }catch(e){ toast('Dieses Geräusch klappt gerade nicht 🙈'); }
 }
@@ -1019,34 +1025,37 @@ async function renderSong(){
   }
   return await off.startRendering();
 }
-function encodeWAV(buf){
-  const ch=buf.numberOfChannels, len=buf.length, sr=buf.sampleRate;
-  const ab=new ArrayBuffer(44+len*ch*2), v=new DataView(ab);
-  const w=(o,s)=>{ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); };
-  w(0,'RIFF'); v.setUint32(4,36+len*ch*2,true); w(8,'WAVE'); w(12,'fmt ');
-  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,ch,true); v.setUint32(24,sr,true);
-  v.setUint32(28,sr*ch*2,true); v.setUint16(32,ch*2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,len*ch*2,true);
-  const data=[]; for(let c=0;c<ch;c++) data.push(buf.getChannelData(c));
-  let o=44;
-  for(let i=0;i<len;i++) for(let c=0;c<ch;c++){ const x=Math.max(-1,Math.min(1,data[c][i])); v.setInt16(o, x<0?x*0x8000:x*0x7FFF, true); o+=2; }
-  return new Blob([ab],{type:'audio/wav'});
+// MP3-Kodierung mit lamejs (läuft komplett im Browser)
+async function encodeMP3(buf, onProg){
+  if(!window.lamejs) throw new Error('lamejs fehlt');
+  const ch=Math.min(2,buf.numberOfChannels), sr=buf.sampleRate;
+  const enc=new lamejs.Mp3Encoder(ch,sr,160);
+  const toI16=a=>{ const o=new Int16Array(a.length); for(let i=0;i<a.length;i++){ const x=Math.max(-1,Math.min(1,a[i])); o[i]=x<0?x*0x8000:x*0x7FFF; } return o; };
+  const L=toI16(buf.getChannelData(0)), R=ch>1?toI16(buf.getChannelData(1)):null;
+  const parts=[], block=1152*16;
+  for(let i=0, k=0; i<L.length; i+=block, k++){
+    const d = R ? enc.encodeBuffer(L.subarray(i,i+block), R.subarray(i,i+block)) : enc.encodeBuffer(L.subarray(i,i+block));
+    if(d.length) parts.push(new Int8Array(d));
+    if(k%8===0){ onProg(i/L.length); await new Promise(r=>setTimeout(r,0)); }
+  }
+  const end=enc.flush(); if(end.length) parts.push(new Int8Array(end));
+  onProg(1);
+  return new Blob(parts,{type:'audio/mpeg'});
 }
-function recordCompressed(buf, onProg){
-  return new Promise((res,rej)=>{
-    const types=['audio/webm;codecs=opus','audio/webm','audio/mp4'];
-    const mt = window.MediaRecorder && types.find(t=>MediaRecorder.isTypeSupported(t));
-    if(!mt) return rej(new Error('no recorder'));
-    const dest=ctx.createMediaStreamDestination();
-    const src=ctx.createBufferSource(); src.buffer=buf;
-    src.connect(dest); src.connect(master);
-    const chunks=[]; const r=new MediaRecorder(dest.stream,{mimeType:mt});
-    r.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
-    r.onstop=()=>{ clearInterval(iv); res({blob:new Blob(chunks,{type:mt}), ext: mt.includes('mp4')?'mp4':'webm'}); };
-    const t0=ctx.currentTime;
-    const iv=setInterval(()=>onProg(Math.min(1,(ctx.currentTime-t0)/buf.duration)),200);
-    src.onended=()=>setTimeout(()=>r.stop(),150);
-    r.start(); src.start();
-  });
+// Einfache ZIP-Datei (ohne Kompression) – nur für die Claude-Vorschau, die keine .mp3-Downloads erlaubt
+function crc32(u){ let crc=~0; for(let i=0;i<u.length;i++){ crc^=u[i]; for(let k=0;k<8;k++) crc=(crc>>>1)^(0xEDB88320&-(crc&1)); } return (~crc)>>>0; }
+async function makeZip(name, blob){
+  const data=new Uint8Array(await blob.arrayBuffer()), nm=new TextEncoder().encode(name), crc=crc32(data);
+  const lh=new DataView(new ArrayBuffer(30));
+  lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(12,0x21,true);
+  lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true); lh.setUint16(26,nm.length,true);
+  const cd=new DataView(new ArrayBuffer(46));
+  cd.setUint32(0,0x02014b50,true); cd.setUint16(4,20,true); cd.setUint16(6,20,true); cd.setUint16(8,0x0800,true); cd.setUint16(14,0x21,true);
+  cd.setUint32(16,crc,true); cd.setUint32(20,data.length,true); cd.setUint32(24,data.length,true); cd.setUint16(28,nm.length,true);
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(8,1,true); eo.setUint16(10,1,true);
+  eo.setUint32(12,46+nm.length,true); eo.setUint32(16,30+nm.length+data.length,true);
+  return new Blob([lh,nm,data,cd,nm,eo],{type:'application/zip'});
 }
 function songName(ext){
   const d=new Date(), p=n=>String(n).padStart(2,'0');
@@ -1067,12 +1076,12 @@ async function exportSong(){
   expUI('💾 Song wird gebaut …','Ich mische alle Spuren zusammen.',.05);
   try{
     const buf = await renderSong();
+    const mp3 = await encodeMP3(buf, p=>expUI('🎵 MP3 wird gemacht …','Gleich ist dein Song fertig.',.2+p*.8));
     if(downloads){
-      expUI('🎧 Song wird aufgenommen …','Hör mal rein – so klingt dein Song! Gleich ist er fertig.',0);
-      const {blob,ext} = await recordCompressed(buf, p=>expUI('🎧 Song wird aufgenommen …','Hör mal rein – so klingt dein Song! Gleich ist er fertig.',p));
-      lastSong={blob,name:songName(ext),buf};
+      const name=songName('mp3');
+      lastSong={blob:await makeZip(name, mp3), name:songName('zip'), buf, zipped:true};
     } else {
-      lastSong={blob:encodeWAV(buf),name:songName('wav'),buf};
+      lastSong={blob:mp3, name:songName('mp3'), buf};
     }
     expUI('🎉 Fertig!',`Dein Song ist ${Math.round(buf.duration)} Sekunden lang. Jetzt speichern?`,1,{save:true,listen:true});
   }catch(e){
@@ -1084,7 +1093,7 @@ async function saveSong(){
   if(downloads){
     try{
       await downloads.save({filename:lastSong.name, data:lastSong.blob});
-      expUI('✅ Gespeichert!','Dein Song liegt jetzt in deinen Downloads.',1,{listen:true});
+      expUI('✅ Gespeichert!','Dein Song liegt in deinen Downloads – die MP3 steckt in einer ZIP-Datei, einfach öffnen.',1,{listen:true});
     }catch(err){
       const code = err && err.code;
       if(code==='declined') expUI('🎉 Fertig!','Nicht gespeichert. Du kannst es noch einmal versuchen.',1,{save:true,listen:true});
