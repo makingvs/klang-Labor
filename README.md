@@ -20,6 +20,6 @@ Die Geräusche stammen aus dem Datensatz [ESC-50](https://github.com/karolpiczak
 Urheber und Lizenz stehen in der Seite bei jedem Geräusch sowie in [`sounds/QUELLEN-LIZENZEN.txt`](sounds/QUELLEN-LIZENZEN.txt).
 Die Geräusche wurden gekürzt und komprimiert.
 
-Die Kategorien **Pups** und **Rülpser** (je 40 Varianten) wurden für das Klang-Labor per Klangsynthese erzeugt und sind gemeinfrei (CC0).
+Die Kategorien **Pups** und **Rülpser** (je 40 Varianten) wurden für das Klang-Labor per Klangsynthese erzeugt (impulssynchrone Synthese mit unregelmäßigen Einzelstößen, wandernden Resonanzen, Blubbern und Raumhall) und sind gemeinfrei (CC0). Das Erzeugungs-Skript liegt in [`tools/pups-ruelps-synthese.py`](tools/pups-ruelps-synthese.py).
 
 Der MP3-Export nutzt [lamejs](https://github.com/zhuker/lamejs) (LGPL, siehe [`lib/LAMEJS-LICENSE.txt`](lib/LAMEJS-LICENSE.txt)).
